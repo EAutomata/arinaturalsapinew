@@ -1,0 +1,39 @@
+# Ignore build output directories
+bin/
+obj/
+
+# Ignore Visual Studio specific files
+.vs/
+.vscode/
+.idea/
+
+# Ignore User-specific files (e.g., Visual Studio)
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Ignore NuGet package directories
+/packages/
+
+# Ignore ASP.NET specific files (for older versions)
+project.lock.json
+project.fragment.lock.json
+
+# Ignore system files like Thumbs.db or .DS_Store
+Thumbs.db
+.DS_Store
+
+# Ignore JetBrains Rider configuration files
+.idea/
+
+# Ignore compiled binaries and logs
+*.dll
+*.exe
+*.pdb
+*.cache
+*.log
+
+# Ignore local user preferences
+*.suo
+*.user
