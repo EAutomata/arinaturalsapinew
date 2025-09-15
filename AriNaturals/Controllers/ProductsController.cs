@@ -18,6 +18,22 @@ public class ProductsController : ControllerBase
         _mapper = mapper;
     }
 
+    [HttpGet]
+    public async Task<ActionResult<ProductDto>> GetProducts()
+    {
+        var products = await _context.Products
+            .Include(p => p.Variants)
+            .Include(p => p.Images)
+            .Include(p => p.Highlights)
+            .ToListAsync();
+
+        if (!products.Any())
+            return NotFound();
+
+        var productsList = _mapper.Map<List<ProductDto>>(products);
+        return Ok(productsList);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<ProductDto>> GetProduct(Guid id)
     {

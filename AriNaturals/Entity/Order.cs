@@ -14,6 +14,7 @@
         public DateTime CreatedAt { get; set; }
         public string OrderNumber { get; set; }
         public long OrderSequence { get; set; }
+        public string RazorPayOrderId { get; set; }
 
         // Navigation
         public Customer Customer { get; set; }
