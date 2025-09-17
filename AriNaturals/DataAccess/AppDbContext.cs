@@ -90,6 +90,18 @@ namespace AriNaturals.DataAccess
             modelBuilder.Entity<ProductReview>()
                 .Property(r => r.ReviewId)
                 .HasDefaultValueSql("NEWID()");
+
+            modelBuilder.Entity<Payment>(entity =>
+            {
+                entity.HasKey(p => p.PaymentId);
+
+                entity.HasOne(p => p.Order)
+                      .WithMany(o => o.Payments)
+                      .HasForeignKey(p => p.OrderId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(p => p.Amount).HasColumnType("decimal(18,2)");
+            });
         }
     }
 }

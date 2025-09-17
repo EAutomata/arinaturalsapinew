@@ -1,47 +1,60 @@
 ﻿using AriNaturals.DataAccess;
 using AriNaturals.Entity;
+using AriNaturals.Interfaces;
 using AriNaturals.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AriNaturals.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class PaymentsController : ControllerBase
+    [AllowAnonymous]
+    public class PaymentsController : Controller
     {
+        private readonly IConfiguration _config;
+        private readonly IEmailService _emailService;
+        private readonly IRazorPayService _razorPayService;
         private readonly AppDbContext _context;
 
-        public PaymentsController(AppDbContext context)
+        public PaymentsController(IConfiguration config, IEmailService emailService, IRazorPayService razorPayService, AppDbContext context)
         {
+            _config = config;
+            _emailService = emailService;
+            _razorPayService = razorPayService;
             _context = context;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreatePayment([FromBody] PaymentRequest request)
+        [HttpPost("verify-payment")]
+        public async Task<IActionResult> VerifyPayment([FromBody] VerifyPaymentRequest request)
         {
+            var razorPayPaymentInfo = _razorPayService.VerifyPayment(request.RazorpayOrderId, request.RazorpayPaymentId, request.RazorpaySignature);
+            if (razorPayPaymentInfo == null)
+                return BadRequest("Invalid signature. Payment verification failed.");
+
             var payment = new Payment
             {
-                PaymentId = Guid.NewGuid(),
-                OrderId = request.OrderId,
-                Amount = request.Amount,
-                PaymentMethod = request.PaymentMethod,
-                PaidAt = DateTime.UtcNow,
-                Status = "Success" // Example: integrate with Razorpay/Stripe
+                RazorpayPaymentId = request.RazorpayPaymentId,
+                RazorpayOrderId = razorPayPaymentInfo["order_id"],
+                RazorpaySignature = request.RazorpaySignature,
+                Status = razorPayPaymentInfo["status"],
+                Method = razorPayPaymentInfo["method"],
+                Amount = razorPayPaymentInfo["amount"] / 100M,
+                Currency = razorPayPaymentInfo["currency"],
+                Email = razorPayPaymentInfo["email"],
+                Contact = razorPayPaymentInfo["contact"],
+                OrderId = request.OrderId
             };
 
             _context.Payments.Add(payment);
             await _context.SaveChangesAsync();
-            return Ok(payment.PaymentId);
+
+            return Ok(payment);
         }
 
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Payment>> GetPayment(Guid id)
+        [HttpPost("Send-email")]
+        public async Task<IActionResult> SendEmail([FromBody] string toemail)
         {
-            var payment = await _context.Payments.FindAsync(id);
-            if (payment == null) return NotFound();
-            return payment;
+            await _emailService.SendEmailAsync("engautomata@gmail.com", "Payment success", "Payment verification success.");
+            return Ok();
         }
     }
-
 }

@@ -52,7 +52,7 @@ namespace AriNaturals.Services
         /// <summary>
         /// Verifies the payment signature returned by Razorpay after checkout
         /// </summary>
-        public bool VerifyPayment(string razorpayOrderId, string razorpayPaymentId, string razorpaySignature)
+        public Payment VerifyPayment(string razorpayOrderId, string razorpayPaymentId, string razorpaySignature)
         {
             try
             {
@@ -65,12 +65,15 @@ namespace AriNaturals.Services
                 };
 
                 Utils.verifyPaymentSignature(attributes);
-                return true;
+
+                Payment payment = client.Payment.Fetch(razorpayPaymentId);
+                string status = payment["status"];
+                return payment;
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Razorpay signature verification failed for order {OrderId}", razorpayOrderId);
-                return false;
+                return null;
             }
         }
     }
