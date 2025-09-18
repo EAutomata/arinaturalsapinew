@@ -52,4 +52,4 @@ jobs:
           app-name: 'arinaturalsapi'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D932F7F1435D4E79A6703992218F5221 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_56F35BB7CB454162B2E1149C4FBF26B6 }}
