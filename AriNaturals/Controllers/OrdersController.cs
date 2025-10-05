@@ -45,7 +45,12 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<OrderDto>> CreateOrder([FromBody] CreateOrderRequest request)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+            return BadRequest("Invalid request. Please check the request before proceeding");
+
+        if(request.Items.Any() && request.Items.Any(it => it.VariantId == Guid.Empty))
+        {
+            return BadRequest("Invalid request. Please add variant of the product to proceed further.");
+        }
 
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
@@ -139,7 +144,7 @@ public class OrdersController : ControllerBase
 
             var orderDto = _mapper.Map<OrderDto>(order);
 
-            return CreatedAtAction(nameof(CreateOrder), new { id = order.RazorPayOrderId });
+            return CreatedAtAction(nameof(CreateOrder), new { OrderInfo = orderDto });
         }
         catch (Exception ex)
         {
