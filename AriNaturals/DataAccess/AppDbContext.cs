@@ -83,6 +83,20 @@ namespace AriNaturals.DataAccess
                 .Property(h => h.HighlightId)
                 .HasDefaultValueSql("NEWID()");
 
+            modelBuilder.Entity<ProductHighlight>()
+                .HasMany(h => h.HighlightSections)
+                .WithOne(s => s.Highlight)
+                .HasForeignKey(s => s.HighlightId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ProductHighlightSection
+            modelBuilder.Entity<ProductHighlightSection>()
+                .HasKey(h => h.SectionId);
+
+            modelBuilder.Entity<ProductHighlightSection>()
+                .Property(h => h.SectionId)
+                .HasDefaultValueSql("NEWID()");
+
             // ProductReview
             modelBuilder.Entity<ProductReview>()
                 .HasKey(r => r.ReviewId);
