@@ -6,7 +6,7 @@ namespace AriNaturals.Entity
 {
     public class Product
     {
-        public Guid ProductId { get; set; }
+        public Guid ProductId { get; set; } = new Guid();
         public string Title { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
         public decimal BasePrice { get; set; }

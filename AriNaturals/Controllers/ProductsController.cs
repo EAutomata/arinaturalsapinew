@@ -1,9 +1,11 @@
-﻿using AriNaturals.DataAccess;
+﻿using System.Text.Json;
+using AriNaturals.DataAccess;
 using AriNaturals.DTOs;
 using AriNaturals.Entity;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static System.Collections.Specialized.BitVector32;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -25,6 +27,7 @@ public class ProductsController : ControllerBase
             .Include(p => p.Variants)
             .Include(p => p.Images)
             .Include(p => p.Highlights)
+            .ThenInclude(p => p.HighlightSections)
             .ToListAsync();
 
         if (!products.Any())
@@ -41,6 +44,7 @@ public class ProductsController : ControllerBase
             .Include(p => p.Variants)
             .Include(p => p.Images)
             .Include(p => p.Highlights)
+            .ThenInclude(p => p.HighlightSections)
             .FirstOrDefaultAsync(p => p.ProductId == id);
 
         if (product == null)
@@ -53,11 +57,54 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<ProductDto>> CreateProduct(ProductDto productDto)
     {
         var product = _mapper.Map<Product>(productDto);
+        product.ProductId = Guid.NewGuid();
 
+        if (product.Variants != null)
+        {
+            foreach (var variant in product.Variants)
+                variant.ProductId = product.ProductId;
+        }
+        else
+        {
+            return BadRequest("Variants cannot be empty");
+        }
+
+        if (product.Images != null)
+        {
+            foreach (var image in product.Images)
+                image.ProductId = product.ProductId;
+        }
+        else
+        {
+            return BadRequest("Images cannot be empty");
+        }
+
+        if (product.Highlights != null)
+        {
+            foreach (var highlight in product.Highlights)
+            {
+                highlight.ProductId = product.ProductId;
+                if (highlight.HighlightSections != null)
+                {
+                    foreach (var section in highlight.HighlightSections)
+                    {
+                        section.PointsJson = JsonSerializer.Serialize(section.SectionPoints);
+                    }
+                }
+            }
+        }
+        else
+        {
+            return BadRequest("Highlights cannot be empty");
+        }
+
+        // Add and save
         _context.Products.Add(product);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetProduct), new { id = product.ProductId }, _mapper.Map<ProductDto>(product));
+        var createdProduct = _mapper.Map<ProductDto>(product);
+
+        return CreatedAtAction(nameof(GetProduct), new { id = product.ProductId }, createdProduct);
     }
 
     [HttpPut("{id}")]
