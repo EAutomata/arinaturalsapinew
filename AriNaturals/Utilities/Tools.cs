@@ -8,7 +8,7 @@ namespace AriNaturals.Utilities
         {
             string datePart = DateTime.UtcNow.ToString("yyyyMMdd");
             string sequencePart = nextId.ToString("D4");
-            return $"AN-ORD-{datePart}-{sequencePart}";
+            return $"#An{datePart}{sequencePart}";
         }
     }
 }

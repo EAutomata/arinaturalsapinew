@@ -42,6 +42,7 @@ namespace AriNaturals.DTOs
 
     public class ProductHighlightSectionDto
     {
+        public Guid SectionId { get; set; }
         public string SectionTitle { get; set; } = string.Empty;
         public string SectionText { get; set; } = string.Empty;
         public List<string> SectionPoints { get; set; } = new();

@@ -47,6 +47,14 @@ namespace AriNaturals.Controllers
             _context.Payments.Add(payment);
             await _context.SaveChangesAsync();
 
+            if(payment.Status.ToLower() == "captured")
+            {
+                var order = _context.Orders.Where(o => o.OrderId == payment.OrderId).FirstOrDefault();
+                order.Status = "Ordered";
+                _context.Orders.Update(order);
+                await _context.SaveChangesAsync();
+            }
+
             return Ok(payment);
         }
 
