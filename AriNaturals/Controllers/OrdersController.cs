@@ -1,11 +1,9 @@
-﻿using System.Net;
-using AriNaturals.DataAccess;
+﻿using AriNaturals.DataAccess;
 using AriNaturals.DTOs;
 using AriNaturals.Entity;
 using AriNaturals.Interfaces;
 using AriNaturals.Utilities;
 using AutoMapper;
-using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,9 +34,27 @@ public class OrdersController : ControllerBase
             .FirstOrDefaultAsync(o => o.OrderNumber == orderNo);
 
         if (order == null)
-            return NotFound();
+            return NotFound("Order not found for the given order number.");
 
         return _mapper.Map<OrderDto>(order);
+    }
+
+    [HttpGet("{customerId}")]
+    public async Task<ActionResult<List<OrderDto>>> GetOrdersByUser(Guid customerId)
+    {
+        var orders = await _context.Orders
+            .Include(o => o.Customer)
+            .Include(o => o.ShippingAddress)
+            .Include(o => o.Payments)
+            .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+            .Where(o => o.CustomerId == customerId)
+            .ToListAsync();
+
+        if (!orders.Any())
+            return NotFound("Order not found for the given order id.");
+
+        return _mapper.Map<List<OrderDto>>(orders);
     }
 
     [HttpPost]
